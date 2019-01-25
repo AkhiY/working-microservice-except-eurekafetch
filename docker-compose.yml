@@ -1,90 +1,118 @@
-version: '3'
+version: '2.1'
 services:
  mongo:
   image: mongo:latest
   ports:
-    -"27017":"27017"
+    - 27017:27017
   volumes:
     - ./data/db:/data/db
   container_name: mongo-docker
   network_mode: host
-  environment:
-    - MONGO_DATA_DIR=/data/db
-    - MONGO_LOG_DIR=/dev/null
-    - MONGO_ROOT_PASSWORD:root
+  hostname: localhost
+  # environment:
+  #   - MONGO_DATA_DIR=/data/db
+  #   - MONGO_LOG_DIR=/dev/null
+  #   - MONGO_ROOT_PASSWORD:root
+  healthcheck:
+    test: "exit 0"
 
  config-server:
   image: config-server-app
   build: cloudConfigServer/
   restart: always
   network_mode: host
+  hostname: localhost
   container_name: config-server-container
   depends_on:
-    - mongodb
+    eureka-server:
+      condition: service_healthy
   ports:
-    -"8086":"8086"	
-  expose:
-    - 8086
-  environment:
-    - NODE_ENV=development
+    - 8086:8086
+  # expose:
+  #   - 8086
+  # environment:
+  #   - NODE_ENV=development
+  healthcheck:
+    test: "exit 0"
 
  zuul-server:
   image: zuul-server-api
   build: muzixapi/
   restart: always
   network_mode: host
+  hostname: localhost
   container_name: zuul-server-container
   depends_on:
-    - mongodb
+    eureka-server:
+      condition: service_healthy
   ports:
-    -"8087":"8087"	
-  expose:
-    - 8087
-  environment:
-    - NODE_ENV=development
+    - 8087:8087
+  # expose:
+  #   - 8087
+  # environment:
+  #   - NODE_ENV=development
+  healthcheck:
+    test: "exit 0"
 
  eureka-server:
   image: eureka-server-app
   build: EurekaService/
   restart: always
   network_mode: host
+  hostname: localhost
   container_name: eureka-server-container
-  depends_on:
-    - mongodb
   ports:
-    -"8761":"8761"	
-  expose:
-    - 8761
-  environment:
-    - NODE_ENV=development
+    - 8761:8761
+  # expose:
+  #   - 8761
+  # environment:
+  #   - NODE_ENV=development
+  healthcheck:
+    test: "exit 0"
 
  tracks-server:
   image: tracks-server-app
   build: MuzixMongoDb
   restart: always
   network_mode: host
+  hostname: localhost
   container_name: tracks-server-container
   depends_on:
-    - mongodb
+    mongo:
+      condition: service_healthy
+    eureka-server:
+      condition: service_healthy
+    config-server:
+      condition: service_healthy
   ports:
-    -"8081":"8081"	
-  expose:
-    - 8081
-  environment:
-    - NODE_ENV=development      
+    - 8081:8081
+  # expose:
+  #   - 8081
+  # environment:
+  #   - NODE_ENV=development      
+  healthcheck:
+    test: "exit 0"
  
  users-server:
   image: users-server-app
   build: UserMicroService/
   restart: always
   network_mode: host
+  hostname: localhost
   container_name: users-server-container
   depends_on:
-    - mongodb
+    mongo:
+      condition: service_healthy
+    eureka-server:
+      condition: service_healthy
+    config-server:
+      condition: service_healthy
   ports:
-    -"8089":"8089"	
-  expose:
-    - 8089
-  environment:
-    - NODE_ENV=development
+    - 8089:8089
+  # expose:
+  #   - 8089
+  # environment:
+  #   - NODE_ENV=development
+  healthcheck:
+    test: "exit 0"
 

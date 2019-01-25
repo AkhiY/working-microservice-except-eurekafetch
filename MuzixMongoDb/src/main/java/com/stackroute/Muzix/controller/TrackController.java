@@ -58,8 +58,8 @@ public class TrackController
     public ResponseEntity<?> getAllTracks() {
      ResponseEntity responseEntity;
      try {
-         trackService.getAllTracks();
-         responseEntity=new ResponseEntity<List<Track>>(HttpStatus.FOUND);
+         List<Track> tracklist=trackService.getAllTracks();
+         responseEntity=new ResponseEntity<List<Track>>(tracklist,HttpStatus.FOUND);
 
      }
 
